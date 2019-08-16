@@ -1,0 +1,90 @@
+{
+  "name": "saga-slice",
+  "version": "0.1.0",
+  "description": "Combines reducers, types, actions and sagas into 1 config file",
+  "scripts": {
+    "test": "jest --passWithNoTests",
+    "tdd": "npm run test -- --watch",
+    "rollup": "rollup -c",
+    "lint": "eslint lib"
+  },
+  "main": "dist/cjs.js",
+  "unpkg": "dist/umd.js",
+  "module": "dist/es.js",
+  "files": [
+    "dist",
+    "lib",
+    "es",
+    "src",
+    "index.d.ts"
+  ],
+  "keywords": [
+    "redux",
+    "react",
+    "sagas",
+    "boilerplate"
+  ],
+  "author": "@damusix",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/polyfill": "^7.4.4",
+    "@babel/preset-env": "^7.5.5",
+    "babel-eslint": "^10.0.2",
+    "eslint": "^6.1.0",
+    "eslint-plugin-jest": "^22.15.1",
+    "eslint-plugin-react": "^7.14.3",
+    "ghooks": "^2.0.4",
+    "redux": "^4.0.4",
+    "redux-saga": "^1.0.5",
+    "rollup": "^1.19.4",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-terser": "^5.1.1"
+  },
+  "peerDependencies": {
+    "redux": "^4.x.x",
+    "redux-saga": "^1.x.x"
+  },
+  "dependencies": {
+    "jest": "^24.8.0"
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "plugins": [
+      "jest"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended"
+    ],
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true,
+        "modules": true
+      }
+    },
+    "env": {
+      "jest/globals": true,
+      "browser": true,
+      "node": true,
+      "es6": true
+    },
+    "settings": {
+      "react": {
+        "version": "16.x"
+      }
+    }
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
+  "config": {
+    "ghooks": {
+      "pre-commit": "npm run lint; npm run rollup",
+      "pre-push": "npm run test; npm run "
+    }
+  }
+}
