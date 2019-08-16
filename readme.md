@@ -87,12 +87,19 @@ const sagaSliceModule = ReduxTool.createModule({
         // create empty functions to use as types for sagas
         someOtherAction: () => {},
     },
+
+    // Sagas must be an object. `A` in this context is a map of
+    // all actions. For every reducer, there is an action to dispatch.
     sagas: (A) => ({
+
+        // this function converts into a valid type
         * [A.fetchAll]({ payload }) {
 
             try {
 
                 const { data } = yield axios.get('/todos');
+
+                // dispatch module actions using `A`
                 yield put(A.fetchSuccess(data));
             }
             catch (e) {
@@ -103,8 +110,23 @@ const sagaSliceModule = ReduxTool.createModule({
     })
 });
 
+// Slice module creates a map of functions that produce redux actions
+// with their respective function, as per keys in reducer
 export const { actions } = sagaSliceModule;
 export default sagaSliceModule;
+```
+
+In this example, `sagaSliceModule` would create the following actions:
+
+```js
+actions.fetchAll()
+// { type: 'todos/fetchAll', payload: undefined }
+
+actions.fetchSuccess(data)
+// { type: 'todos/fetchAll', payload: { status: 200, ... } }
+
+actions.fetchFail(errorMessage)
+// { type: 'todos/fetchAll', payload: "oopsies" }
 ```
 
 ---
