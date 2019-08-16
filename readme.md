@@ -14,8 +14,9 @@ Table of Contents
     * [rootReducer([])](#rootreducer)
 
 #### Peer Dependencies:
-- Redux
-- Redux Sagas
+- [Redux](https://redux.js.org)
+- [Redux Sagas](https://redux-saga.js.org/)
+- [Immer](https://github.com/immerjs/immer)
 
 ## Quick Setup
 
@@ -60,28 +61,20 @@ const sagaSliceModule = ReduxTool.createModule({
     reducers: { // required
 
         // reducer key names are used as types
+        // reducers use `immer` to provide immutability
         fetchAll: (state) => {
 
-            return {
-                ...state,
-                isFetching: true
-            }
+            state.isFetching = true;
         },
         fetchSuccess: (state, data) => {
 
-            return {
-                ...state,
-                data,
-                isFetching: false
-            }
+            state.isFetching = false;
+            state.data = data;
         },
         fetchFail: (state, error) => {
 
-            return {
-                ...state,
-                error,
-                isFetching: false
-            }
+            state.isFetching = false;
+            state.error = error;
         },
 
         // create empty functions to use as types for sagas
