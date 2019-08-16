@@ -123,10 +123,10 @@ actions.fetchAll()
 // { type: 'todos/fetchAll', payload: undefined }
 
 actions.fetchSuccess(data)
-// { type: 'todos/fetchAll', payload: { status: 200, ... } }
+// { type: 'todos/fetchSuccess', payload: { status: 200, ... } }
 
 actions.fetchFail(errorMessage)
-// { type: 'todos/fetchAll', payload: "oopsies" }
+// { type: 'todos/fetchFail', payload: "oopsies" }
 ```
 
 ---
