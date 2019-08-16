@@ -1,4 +1,5 @@
 import { takeEvery, all } from 'redux-saga/effects';
+import produce from 'immer';
 import { combineReducers } from 'redux';
 
 function _classCallCheck(instance, Constructor) {
@@ -182,29 +183,24 @@ var areSagaSlices = function areSagaSlices(arr) {
  *     name: 'todos', // required
  *     initialState, // required
  *     reducers: { // required
- *         fetchAll: (state) => {
+ *          // Uses Immer for immutable state
+ *          fetchAll: (state) => {
  *
- *             return {
- *                 ...state,
- *                 isFetching: true
- *             }
- *         },
- *         fetchSuccess: (state, data) => {
+ *              state.isFetching = true;
+ *          },
+ *          fetchSuccess: (state, data) => {
  *
- *             return {
- *                 ...state,
- *                 data,
- *                 isFetching: false
- *             }
- *         },
- *         fetchFail: (state, error) => {
+ *              state.isFetching = false;
+ *              state.data = data;
+ *          },
+ *          fetchFail: (state, error) => {
  *
- *             return {
- *                 ...state,
- *                 error,
- *                 isFetching: false
- *             }
- *         },
+ *              state.isFetching = false;
+ *              state.error = error;
+ *          },
+ *
+ *          // create empty functions to use as types for sagas
+ *          someOtherAction: () => {},
  *     },
  *     sagas: (A) => ({
  *         * [A.fetchAll]({ payload }) {
@@ -262,7 +258,7 @@ var createModule = function createModule(opts) {
     reducers: {}
   }),
       actions = _Object$entries$reduc.actions,
-      reducers = _Object$entries$reduc.reducers; // Reducer for redux
+      reducers = _Object$entries$reduc.reducers; // Reducer for redux using Immer
 
 
   var moduleReducer = function moduleReducer() {
@@ -275,7 +271,9 @@ var createModule = function createModule(opts) {
     var reducer = reducers[type];
 
     if (typeof reducer === 'function') {
-      return reducer(state, payload) || state;
+      return produce(state, function (draft) {
+        return reducer(draft, payload);
+      });
     }
 
     return state;
