@@ -8,6 +8,20 @@
     "rollup": "rollup -c",
     "lint": "eslint lib"
   },
+  "homepage": "https://github.com/damusix/saga-slice#readme",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/damusix/saga-slice.git"
+  },
+  "bugs": {
+    "url": "https://github.com/damusix/saga-slice/issues"
+  },
+  "author": {
+    "name": "Danilo Alonso",
+    "email": "damusix@gmail.com",
+    "url": "https://danilo.io"
+  },
+  "license": "MIT",
   "main": "dist/cjs.js",
   "unpkg": "dist/umd.js",
   "module": "dist/es.js",
@@ -24,8 +38,6 @@
     "sagas",
     "boilerplate"
   ],
-  "author": "@damusix",
-  "license": "MIT",
   "devDependencies": {
     "@babel/polyfill": "^7.4.4",
     "@babel/preset-env": "^7.5.5",
