@@ -27,17 +27,17 @@ Copy pasta for a quickstart using this library
 ```js
 
 import { rootSaga, rootReducer } from 'saga-slice';
-import reduxModules from './reduxModules';
+import sagaSliceModules from './sagaSliceModules';
 
 
 const sagaMiddleware = createSagaMiddleware();
 
 const store = createStore(
-    rootReducer(reduxModules),
+    rootReducer(sagaSliceModules),
     applyMiddleware(sagaMiddleware)
 );
 
-sagaMiddleware.run(rootSaga(reduxModules));
+sagaMiddleware.run(rootSaga(sagaSliceModules));
 ```
 
 

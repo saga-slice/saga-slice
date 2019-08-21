@@ -28,9 +28,7 @@
   "files": [
     "dist",
     "lib",
-    "es",
-    "src",
-    "index.d.ts"
+    "src"
   ],
   "keywords": [
     "redux",

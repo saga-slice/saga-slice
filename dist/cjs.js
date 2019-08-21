@@ -139,7 +139,16 @@ var areGenerators = function areGenerators(arr) {
   });
 };
 
-var SagaSlice = function SagaSlice(props) {
+var SagaSlice =
+/**
+ *
+ * @param {Object} props
+ * @param {String} props.name Reducer name.
+ * @param {{string: Function}} props.actions Map of actions based on reducer map keys
+ * @param {Generator} props.sagas A generator function that runs the defined sagas
+ * @param {Function} props.reducer The component's main reducer
+ */
+function SagaSlice(props) {
   _classCallCheck(this, SagaSlice);
 
   assert(props.name, 'slice module must have a name');
@@ -167,57 +176,53 @@ var areSagaSlices = function areSagaSlices(arr) {
 };
 
 /**
+ * A callback that is passed redux actions and returns a generator
+ * @callback SagaActionsGeneratorCallback
+ * @param {Object} actions Redux action payload
+ * @returns {Generator}
+ */
+
+/**
  * Redux module creator makes types out of name + reducer keys.
  * Abstracts away the need for types or the creation of actions.
  * Also supports the creation of sagas for async actions.
  *
- * @param {object} opts Module config object that contains `name`, `sagas`, `reducers`, and `initialState`
+ * @param {Object} opts Module config object
+ * @param {String} opts.name Reducer name.
+ * @param {Object} opts.initialState Initial reducer state.
+ * @param {Object.<String, Function>} opts.reducers Map of reducers. Map keys are used as types.
+ * @param {SagaActionsGeneratorCallback} opts.sagas
  *
- * @returns {object} The created module with `name`,`actions`,`sagas`,`reducer`
+ * @returns {SagaSlice} The created module with `name`,`actions`,`sagas`,`reducer`
  *
  * @example
  *
- * import ReduxTool from '..';
- *
- * const initialState = {
- *     isFetching: false,
- *     data: null,
- *     error: null
- * };
- *
- * export default ReduxTool.createModule({
+ * export default createModule({
  *     name: 'todos', // required
  *     initialState, // required
  *     reducers: { // required
  *          // Uses Immer for immutable state
  *          fetchAll: (state) => {
- *
  *              state.isFetching = true;
  *          },
  *          fetchSuccess: (state, data) => {
- *
  *              state.isFetching = false;
  *              state.data = data;
  *          },
  *          fetchFail: (state, error) => {
- *
  *              state.isFetching = false;
  *              state.error = error;
  *          },
- *
  *          // create empty functions to use as types for sagas
  *          someOtherAction: () => {},
  *     },
  *     sagas: (A) => ({
  *         * [A.fetchAll]({ payload }) {
- *
  *             try {
- *
  *                 const { data } = yield axios.get('/todos');
  *                 yield put(A.fetchSuccess(data));
  *             }
  *             catch (e) {
- *
  *                 yield put(A.fetchFail(e));
  *             }
  *         }
@@ -341,16 +346,17 @@ var createModule = function createModule(opts) {
 };
 
 /**
+ *
  * Creates a root saga. Accepts an array of modules.
  *
- * @param {array} modules Array of modules created using `createModule`
+ * @param {SagaSlice[]} modules Array of modules created using `createModule`
  *
- * @returns {generator} Generator function for sagas
+ * @returns {Generator} Generator function for sagas
  *
  * @example
  *
  * const sagaMiddleware = createSagaMiddleware();
- * sagaMiddleware.run(rootSaga(reduxModules));
+ * sagaMiddleware.run(rootSaga(sagaSliceModules));
  */
 
 var rootSaga = function rootSaga(modules) {
@@ -386,15 +392,15 @@ var rootSaga = function rootSaga(modules) {
  * Creates root reducer by combining reducers.
  * Accepts array of modules and and extra reducers object.
  *
- * @param {array} modules Array of modules created using `createModule`
- * @param {object} others Object of extra reducers not created by saga-slice
+ * @arg {Array.<SagaSlice>} modules Array of modules created using `createModule`
+ * @arg {Object.<String, Function>} others Object of extra reducers not created by `saga-slice`
  *
- * @returns {object} Redux combined reducers
+ * @returns {Function} Root redux reducer using `combineReducers()`
  *
  * @example
  *
  * const store = createStore(
- *     rootReducer(reduxModules, extraReducers),
+ *     rootReducer(sagaSliceModules, extraReducers),
  *     composeEnhancers(applyMiddleware(...middleware))
  * );
  */
