@@ -406,19 +406,6 @@ function takeEvery$1(patternOrChannel, worker) {
   return fork.apply(void 0, [takeEvery, patternOrChannel, worker].concat(args));
 }
 
-var Generator =
-/*#__PURE__*/
-regeneratorRuntime.mark(function _callee() {
-  return regeneratorRuntime.wrap(function _callee$(_context) {
-    while (1) {
-      switch (_context.prev = _context.next) {
-        case 0:
-        case "end":
-          return _context.stop();
-      }
-    }
-  }, _callee);
-}).constructor;
 var isTrueObject = function isTrueObject(val) {
   return val.constructor === Object;
 };
@@ -429,7 +416,7 @@ var isFunction = function isFunction(fn) {
   return fn instanceof Function;
 };
 var isGenerator = function isGenerator(fn) {
-  return fn instanceof Generator;
+  return fn.constructor.name === 'GeneratorFunction';
 };
 var genName = function genName(name, key) {
   return "".concat(name, "/").concat(key);
@@ -452,11 +439,14 @@ function isDraft(value) {
   return !!value && !!value[DRAFT_STATE];
 }
 function isDraftable(value) {
+  if (!value) { return false; }
+  return isPlainObject(value) || !!value[DRAFTABLE] || !!value.constructor[DRAFTABLE];
+}
+function isPlainObject(value) {
   if (!value || typeof value !== "object") { return false; }
   if (Array.isArray(value)) { return true; }
   var proto = Object.getPrototypeOf(value);
-  if (!proto || proto === Object.prototype) { return true; }
-  return !!value[DRAFTABLE] || !!value.constructor[DRAFTABLE];
+  return !proto || proto === Object.prototype;
 }
 var assign = Object.assign || function assign(target, value) {
   for (var key in value) {
@@ -522,6 +512,15 @@ function is(x, y) {
   } else {
     return x !== x && y !== y;
   }
+}
+function clone(obj) {
+  if (!isDraftable(obj)) { return obj; }
+  if (Array.isArray(obj)) { return obj.map(clone); }
+  var cloned = Object.create(Object.getPrototypeOf(obj));
+
+  for (var key in obj) { cloned[key] = clone(obj[key]); }
+
+  return cloned;
 }
 
 /** Each scope represents a `produce` call. */
@@ -1065,7 +1064,6 @@ function generateArrayPatches(state, basePath, patches, inversePatches) {
     }
   }
 
-  var useRemove = end != base.length;
   var replaceCount = patches.length; // Process added indices.
 
   for (var i$1 = end + delta - 1; i$1 >= end; --i$1) {
@@ -1075,21 +1073,9 @@ function generateArrayPatches(state, basePath, patches, inversePatches) {
       path: path$1,
       value: copy[i$1]
     };
-
-    if (useRemove) {
-      inversePatches.push({
-        op: "remove",
-        path: path$1
-      });
-    }
-  } // One "replace" patch reverses all non-splicing "add" patches.
-
-
-  if (!useRemove) {
     inversePatches.push({
-      op: "replace",
-      path: basePath.concat(["length"]),
-      value: base.length
+      op: "remove",
+      path: path$1
     });
   }
 }
@@ -1126,32 +1112,38 @@ function generateObjectPatches(state, basePath, patches, inversePatches) {
   });
 }
 
-function applyPatches(draft, patches) {
-  // First, find a patch that replaces the entire state, if found, we don't have to apply earlier patches and modify the state
-  for (var i = 0; i < patches.length; i++) {
-    var patch = patches[i];
+var applyPatches = function (draft, patches) {
+  for (var i$1 = 0, list = patches; i$1 < list.length; i$1 += 1) {
+    var patch = list[i$1];
+
     var path = patch.path;
+    var op = patch.op;
+    var value = clone(patch.value); // used to clone patch to ensure original patch is not modified, see #411
+
     if (!path.length) { throw new Error("Illegal state"); }
     var base = draft;
 
-    for (var i$1 = 0; i$1 < path.length - 1; i$1++) {
-      base = base[path[i$1]];
+    for (var i = 0; i < path.length - 1; i++) {
+      base = base[path[i]];
       if (!base || typeof base !== "object") { throw new Error("Cannot apply patch, path doesn't resolve: " + path.join("/")); } // prettier-ignore
     }
 
     var key = path[path.length - 1];
 
-    switch (patch.op) {
+    switch (op) {
       case "replace":
-        base[key] = patch.value;
+        // if value is an object, then it's assigned by reference
+        // in the following add or remove ops, the value field inside the patch will also be modifyed
+        // so we use value from the cloned patch
+        base[key] = value;
         break;
 
       case "add":
         if (Array.isArray(base)) {
           // TODO: support "foo/-" paths for appending to an array
-          base.splice(key, 0, patch.value);
+          base.splice(key, 0, value);
         } else {
-          base[key] = patch.value;
+          base[key] = value;
         }
 
         break;
@@ -1166,12 +1158,12 @@ function applyPatches(draft, patches) {
         break;
 
       default:
-        throw new Error("Unsupported patch operation: " + patch.op);
+        throw new Error("Unsupported patch operation: " + op);
     }
   }
 
   return draft;
-}
+};
 
 function verifyMinified() {}
 
@@ -1880,7 +1872,7 @@ var ActionTypes = {
  * @param {any} obj The object to inspect.
  * @returns {boolean} True if the argument appears to be a plain object.
  */
-function isPlainObject(obj) {
+function isPlainObject$1(obj) {
   if (typeof obj !== 'object' || obj === null) return false;
   var proto = obj;
 
@@ -1928,7 +1920,7 @@ function getUnexpectedStateShapeWarningMessage(inputState, reducers, action, une
     return 'Store does not have a valid reducer. Make sure the argument passed ' + 'to combineReducers is an object whose values are reducers.';
   }
 
-  if (!isPlainObject(inputState)) {
+  if (!isPlainObject$1(inputState)) {
     return "The " + argumentName + " has unexpected type of \"" + {}.toString.call(inputState).match(/\s([a-z|A-Z]+)/)[1] + "\". Expected argument to be an object with the following " + ("keys: \"" + reducerKeys.join('", "') + "\"");
   }
 

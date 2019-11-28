@@ -95,19 +95,6 @@ function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
 }
 
-var Generator =
-/*#__PURE__*/
-regeneratorRuntime.mark(function _callee() {
-  return regeneratorRuntime.wrap(function _callee$(_context) {
-    while (1) {
-      switch (_context.prev = _context.next) {
-        case 0:
-        case "end":
-          return _context.stop();
-      }
-    }
-  }, _callee);
-}).constructor;
 var isTrueObject = function isTrueObject(val) {
   return val.constructor === Object;
 };
@@ -118,7 +105,7 @@ var isFunction = function isFunction(fn) {
   return fn instanceof Function;
 };
 var isGenerator = function isGenerator(fn) {
-  return fn instanceof Generator;
+  return fn.constructor.name === 'GeneratorFunction';
 };
 var genName = function genName(name, key) {
   return "".concat(name, "/").concat(key);
