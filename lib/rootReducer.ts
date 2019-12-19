@@ -1,6 +1,4 @@
 import { combineReducers } from 'redux';
-import { isTrueObject, assert } from './util';
-import { areSagaSlices } from './SagaSlice';
 
 /**
  * Creates root reducer by combining reducers.
@@ -18,13 +16,11 @@ import { areSagaSlices } from './SagaSlice';
  *     composeEnhancers(applyMiddleware(...middleware))
  * );
  */
-export const rootReducer = function (modules, others = {}) {
+export const rootReducer = function (modules: SagaSlice[], others: { [key: string]: any } = {}) {
 
-    areSagaSlices(modules);
-    assert(isTrueObject(others), 'other reducers must be an object');
+    const reducers = modules.reduce((a: { [key: string]: any }, slice: SagaSlice) => {
 
-    const reducers = modules.reduce((a, { name, reducer }) => {
-
+        const { name, reducer } = slice;
         a[name] = reducer;
         return a;
     }, {});

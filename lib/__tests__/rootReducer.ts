@@ -11,33 +11,12 @@ const stub = {
     }
 };
 
-test('should not accept bad arguments', () => {
-
-    [
-        [undefined],
-        [false],
-        [{}],
-        ["asd"],
-        [12],
-        [[], true],
-        [[], "asd"],
-        [[], 12],
-    ].forEach(args => {
-
-        expect(() => rootReducer(...args)).toThrow();
-    });
-
-    expect(() => rootReducer([1,2,3])).toThrow(/should be a saga slice/);
-    expect(() => rootReducer([createModule(stub.modConf)], 1)).toThrow(/other.+be an object/);
-});
-
 test('should create a root reducer', () => {
 
+    const opts = { name: 'mod1', ...stub.modConf }
+
     const mods = [
-        createModule({
-            ...stub.modConf,
-            name: 'mod1'
-        }),
+        createModule(opts),
         createModule({
             ...stub.modConf,
             name: 'mod2'

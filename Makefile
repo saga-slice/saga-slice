@@ -1,6 +1,6 @@
 
 build:
-	@ npm run rollup
+	@ npm run ts
 
 test:
 	@ npm run lint

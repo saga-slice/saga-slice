@@ -1,4 +1,3 @@
-import { areSagaSlices } from './SagaSlice';
 import { all } from 'redux-saga/effects';
 
 /**
@@ -14,17 +13,15 @@ import { all } from 'redux-saga/effects';
  * const sagaMiddleware = createSagaMiddleware();
  * sagaMiddleware.run(rootSaga(sagaSliceModules));
  */
-export const rootSaga = function (modules) {
-
-    areSagaSlices(modules);
+export const rootSaga = function (modules: SagaSlice[]) {
 
     return function* () {
 
         yield all(
             modules
-                .map(({ sagas }) => sagas)
-                .reduce((a, c) => a.concat(c), [])
-                .map((saga) => saga())
+                .map((slice) => slice.sagas)
+                .reduce((a, c: any) => a.concat(c), [])
+                .map((saga: any) => saga())
         );
     }
 }

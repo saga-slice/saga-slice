@@ -1,7 +1,7 @@
 # Saga Slice
 
 Slicing away at redux boilerplate. Similar to `redux-starter-kit`, easier than `kea-saga`.
-
+Full documentation [available here](https://miami-dev-shop.gitbook.io/saga-slice/)
 
 Table of Contents
 =================
@@ -9,9 +9,15 @@ Table of Contents
 * [Peer Dependencies:](#peer-dependencies)
 * [Quick Setup](#quick-setup)
 * [API](#api)
-    * [createModule({ ... })](#createmodule--)
-    * [rootSaga([])](#rootsaga)
-    * [rootReducer([])](#rootreducer)
+    * [createModule](#createmodule-opts-moduleopts--sagaslice)
+    * [rootSaga](#rootsaga-modules-sagaslice----generator)
+    * [rootReducer](#rootreducer-modules-sagaslice-others-object--any)
+* [Types](#types)
+    * [SagaObject](#sagaobject)
+    * [ModuleOpts](#moduleopts)
+    * [SagaSlice](#sagaslice)
+
+
 
 #### Peer Dependencies:
 - [Redux](https://redux.js.org)
@@ -44,7 +50,7 @@ sagaMiddleware.run(rootSaga(sagaSliceModules));
 ## API
 ---
 
-### `createModule({ ... })`
+#### `createModule: (opts: ModuleOpts) => SagaSlice;`
 
 Creates a saga slice module
 
@@ -124,7 +130,7 @@ actions.fetchFail(errorMessage)
 
 ---
 
-### `rootSaga([])`
+#### `rootSaga: (modules: SagaSlice[]) => () => Generator`
 
 Creates a root saga
 
@@ -144,7 +150,7 @@ sagaMiddleware.run(rootSaga(sagaSliceModules));
 
 ---
 
-### `rootReducer([])`
+#### `rootReducer: (modules: SagaSlice[], others?: object) => any`
 
 Creates a root reducer
 
@@ -161,4 +167,50 @@ const store = createStore(
     rootReducer(sagaSliceModules),
     applyMiddleware(sagaMiddleware)
 );
+```
+
+## Types
+
+#### `SagaObject`
+
+```ts
+interface SagaObject {
+    (...args: any): void;
+    saga: void;
+    taker?: any;
+}
+```
+
+#### `ModuleOpts`
+
+```ts
+ModuleOpts {
+
+    name: string;
+    initialState: {
+        [key: string]: any;
+    };
+    reducers: {
+        [key: string]: () => any;
+    };
+    sagas?: (actions: object) => {
+        [type: string]: SagaObject;
+    };
+    takers?: {
+        [type: string]: void;
+    };
+}
+```
+
+#### `SagaSlice`
+
+```ts
+interface SagaSlice {
+    name: string;
+    actions: {
+        [key: string]: () => any;
+    };
+    reducer: (state: any, action: ReduxAction) => any;
+    sagas: Iterable<any>[];
+}
 ```

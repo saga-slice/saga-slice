@@ -2,14 +2,16 @@ import { put, select, takeLatest } from "redux-saga/effects";
 import { createStore, applyMiddleware } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 
-import { rootSaga, rootReducer, createModule } from '../../index';
+import { rootSaga, rootReducer, createModule } from '..';
 
-const wait = time => new Promise((resolve) => {
+const wait = (time: any) => new Promise((resolve) => {
 
     setTimeout(resolve, time);
 });
 
-const asyncFetch = ({ fail, response, payload }) => new Promise((res, rej) => {
+const asyncFetch = (opts: { [key: string]: any }) => new Promise((res, rej) => {
+
+    const { fail, response, payload } = opts;
 
     if (fail) {
 
@@ -23,31 +25,32 @@ const asyncFetch = ({ fail, response, payload }) => new Promise((res, rej) => {
 });
 
 const crudReducers = {
-    fetch: (state) => {
+    fetch: (state: any) => {
 
         state.isFetching = true;
     },
-    fetchSuccess: (state, payload) => {
+    fetchSuccess: (state: any, payload: any) => {
 
         state.isFetching = false;
         state.data = payload;
     },
-    fetchFail: (state, payload) => {
+    fetchFail: (state: any, payload: any) => {
 
         state.isFetching = false;
         state.error = payload;
     },
-    shouldTakeLatest: (state) => state,
-    shouldRunOnce: (state) => {
+    shouldTakeLatest: (state: any) => state,
+    shouldRunOnce: (state: any) => {
 
         state.shouldRunOnce += 1;
     }
 };
 
-const crudSagas = (name) => (A) => ({
+const crudSagas = (name: any) => (A: any) => ({
 
-    * [A.fetch]({ payload }) {
+    * [A.fetch](action: any) {
 
+        const { payload } = action;
         const { isFetching } = yield select(state => state[name]);
 
         expect(isFetching).toBe(true);
@@ -78,7 +81,7 @@ const crudSagas = (name) => (A) => ({
     }
 });
 
-const stub = {
+const stub: { [key: string]: any } = {
     todos: {
         name: 'todos',
         initialState: {

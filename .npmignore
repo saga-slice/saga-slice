@@ -1,0 +1,7 @@
+jest.config.jest
+Makefile
+rollup.config.js
+tsconfig.json
+.vscode
+.eslintignore
+lib

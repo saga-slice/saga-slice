@@ -1,25 +1,14 @@
 import { takeEvery } from 'redux-saga/effects';
-import { genName, isGenerator, isFunction, isTrueObject, assert } from './util';
 import produce from "immer";
-import SagaSlice from './SagaSlice';
 
-/**
- * A callback that is passed redux actions and returns a generator
- * @callback SagaActionsGeneratorCallback
- * @param {Object} actions Redux action payload
- * @returns {Generator}
- */
+const genName = (name:string, key:string) => `${name}/${key}`;
 
 /**
  * Redux module creator makes types out of name + reducer keys.
  * Abstracts away the need for types or the creation of actions.
  * Also supports the creation of sagas for async actions.
  *
- * @param {Object} opts Module config object
- * @param {String} opts.name Reducer name.
- * @param {Object} opts.initialState Initial reducer state.
- * @param {Object.<String, Function>} opts.reducers Map of reducers. Map keys are used as types.
- * @param {SagaActionsGeneratorCallback} opts.sagas
+ * @param {ModuleOpts} opts Module config object
  *
  * @returns {SagaSlice} The created module with `name`,`actions`,`sagas`,`reducer`
  *
@@ -57,31 +46,29 @@ import SagaSlice from './SagaSlice';
  *     })
  * });
  */
-export const createModule = (opts) => {
-
-    assert(opts && isTrueObject(opts), 'options must be an object');
+export const createModule = (opts: ModuleOpts): SagaSlice => {
 
     const {
         name,
         initialState
     } = opts;
 
-    assert(opts.name, 'name is required');
-    assert(opts.reducers, 'reducers is required');
-    assert(opts.initialState !== undefined, 'initialState is required');
-    assert(isTrueObject(opts.reducers), 'reducers must be an object');
+    const extractsInitial = {
+        actions: {},
+        reducers: {}
+    };
 
-    assert(opts.sagas === undefined || isFunction(opts.sagas), 'sagas must be a function');
-
+    const reducerEntries = Object.entries(opts.reducers);
 
     // Iterate over reducer properties, extract types and actions
-    const { actions, reducers } = Object.entries(opts.reducers).reduce((acc, [key, val]) => {
+    const extracted: OptsExtracts = reducerEntries.reduce((acc: OptsExtracts, entry: [string, any]) => {
 
+        const [key, val] = entry;
         // Create the type
         const type = genName(name, key);
 
         // Create action
-        acc.actions[key] = payload => ({ type, payload });
+        acc.actions[<any>key] = (payload: any) => ({ type, payload });
         acc.actions[key].type = type;
         acc.actions[key].toString = () => type;
 
@@ -89,11 +76,15 @@ export const createModule = (opts) => {
         acc.reducers[type] = val;
 
         return acc;
-    }, { actions: {}, reducers: {} });
+    }, extractsInitial);
+
+    const { actions, reducers } = extracted;
+
 
     // Reducer for redux using Immer
-    const moduleReducer = (state = initialState, { type, payload }) => {
+    const moduleReducer = (state = initialState, action: ReduxAction) => {
 
+        const { type, payload } = action;
         const reducer = reducers[type];
 
         if (typeof reducer === 'function') {
@@ -105,20 +96,23 @@ export const createModule = (opts) => {
     }
 
     // Iterate over sagas and prepare them
-    let sagas = [];
-    if (opts.sagas) {
-        sagas = Object.entries(opts.sagas(actions)).map(([type, sagaObj]) => {
+    let sagas: any[] = [];
 
+
+    if (opts.sagas) {
+
+        const sagasEntries = Object.entries(opts.sagas(actions));
+
+        sagas = sagasEntries.map((entry: [string, any]) => {
+
+            const [type, sagaObj] = entry;
             // Saga object can be a generator function, or object
             // with `saga`, `taker`, `watcher`
-            let { saga, taker, watcher } = sagaObj;
 
-            if (watcher) {
+            let saga: any = sagaObj.saga;
+            let taker: any = sagaObj.taker;
 
-                return watcher;
-            }
-
-            if (isGenerator(sagaObj)) {
+            if (typeof sagaObj === 'function') {
 
                 saga = sagaObj;
                 taker = takeEvery;
@@ -135,10 +129,10 @@ export const createModule = (opts) => {
         });
     }
 
-    return new SagaSlice({
+    return {
         name,
         actions,
         sagas,
         reducer: moduleReducer
-    });
+    };
 };
