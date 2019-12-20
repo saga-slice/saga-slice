@@ -1,6 +1,6 @@
 {
   "name": "saga-slice",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Combines reducers, types, actions and sagas into 1 config file",
   "scripts": {
     "test": "jest --passWithNoTests",
