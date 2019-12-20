@@ -19,7 +19,7 @@ interface OptionalModuleOpts {
         [type: string]: SagaObject
     },
     takers?: {
-        [type: string]: void
+        [type: string]: void | string[],
     }
 };
 
@@ -30,6 +30,9 @@ interface OptsExtracts {
         [key: string]: any
     },
     reducers: {
+        [key: string]: any
+    },
+    takers: {
         [key: string]: any
     }
 };

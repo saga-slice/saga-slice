@@ -13,18 +13,14 @@ const stub = {
 
 test('should create a root reducer', () => {
 
-    const opts = { name: 'mod1', ...stub.modConf }
+    const opts1 = { ...stub.modConf, name: 'mod1' }
+    const opts2 = { ...stub.modConf, name: 'mod2' }
+    const opts3 = { ...stub.modConf, name: 'mod3' }
 
     const mods = [
-        createModule(opts),
-        createModule({
-            ...stub.modConf,
-            name: 'mod2'
-        }),
-        createModule({
-            ...stub.modConf,
-            name: 'mod3'
-        }),
+        createModule(opts1),
+        createModule(opts2),
+        createModule(opts3),
     ];
 
     // stub reducers

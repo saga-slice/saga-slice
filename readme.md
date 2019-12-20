@@ -87,11 +87,26 @@ const sagaSliceModule = ReduxTool.createModule({
         someOtherAction: () => {},
     },
 
+    // Optionally override taker
+    takers: {
+        fetchAll: takeLatest,
+
+        // can also pass taker as key with array of types
+        // taker must exist in redux-saga effects
+        takeLeading: ['fetchAll', 'fetchSuccess']
+    },
+
+    // Or apply default effect to all
+    takers: 'takeLatest' || 'takeLeading',
+
+    // Or apply a custom effect to all
+    takers: throttle.bind(throttle, 1000),
+
     // Sagas must be an object. `A` in this context is a map of
     // all actions. For every reducer, there is an action to dispatch.
     sagas: (A) => ({
 
-        // this function converts into a valid type
+        // This is considered a valid SagaObject
         * [A.fetchAll]({ payload }) {
 
             try {
@@ -105,7 +120,22 @@ const sagaSliceModule = ReduxTool.createModule({
 
                 yield put(A.fetchFail(e));
             }
-        }
+        },
+
+        // Also considered a valid SagaObject
+        [A.fetchFail]: {
+            saga: function* () {},
+            taker: takeLatest
+        },
+
+        // Also considered a valid SagaObject
+        [A.fetchFail]: {
+            * saga () {},
+            taker: takeLatest
+        },
+
+        // Also considered a valid SagaObject
+        [A.fetchFail]: function* () {},
     })
 });
 

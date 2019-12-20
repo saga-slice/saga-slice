@@ -1,4 +1,4 @@
-import { put, select, takeLatest } from "redux-saga/effects";
+import { put, select, takeLatest, debounce, throttle } from "redux-saga/effects";
 import { createStore, applyMiddleware } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 
@@ -8,6 +8,16 @@ const wait = (time: any) => new Promise((resolve) => {
 
     setTimeout(resolve, time);
 });
+
+// const time = () => {
+//     const now = new Date();
+//     return([
+//         now.getHours(),
+//         now.getMinutes(),
+//         now.getSeconds(),
+//         now.getMilliseconds(),
+//     ].join(':'));
+// };
 
 const asyncFetch = (opts: { [key: string]: any }) => new Promise((res, rej) => {
 
@@ -43,6 +53,16 @@ const crudReducers = {
     shouldRunOnce: (state: any) => {
 
         state.shouldRunOnce += 1;
+    },
+    shouldThrottle: (state: any) => state,
+    didThrottle: (state: any) => {
+
+        state.throttled += 1;
+    },
+    shouldDebounce: (state: any) => state,
+    didDebounce: (state: any) => {
+
+        state.debounced += 1;
     }
 };
 
@@ -78,39 +98,73 @@ const crudSagas = (name: any) => (A: any) => ({
             yield put(A.shouldRunOnce());
         },
         taker: takeLatest
+    },
+    [A.shouldThrottle]: function* () {
+
+        yield wait(50);
+        yield put(A.didThrottle());
+    },
+    [A.shouldDebounce]: function* () {
+
+        yield wait(50);
+        yield put(A.didDebounce());
     }
 });
 
-const stub: { [key: string]: any } = {
-    todos: {
-        name: 'todos',
+const conf = (name: string, state: any, takers: any): any => {
+
+    return {
+        name,
         initialState: {
             isFetching: false,
             data: null,
             error: null,
-            shouldRunOnce: 0
+            ...state
         },
         reducers: { ...crudReducers },
-        sagas: crudSagas('todos')
-    },
-    users: {
-        name: 'users',
-        initialState: {
-            isFetching: false,
-            data: null,
-            error: null
-        },
-        reducers: { ...crudReducers },
-        sagas: crudSagas('users')
+        takers,
+        sagas: crudSagas(name)
     }
+}
+
+const stub: { [key: string]: any } = {
+    todos: conf(
+        'todos',
+        {
+            shouldRunOnce: 0,
+            throttled: 0
+        },
+        {
+            shouldThrottle: throttle.bind(throttle, 100)
+        }
+    ),
+    users: conf('users', {}, null),
+    takes: conf(
+        'takes',
+        {
+            debounced: 0,
+            throttled: 0
+        },
+        debounce.bind(debounce, 50)
+    ),
+    ticks: conf(
+        'ticks',
+        {
+            debounced: 0,
+            throttled: 0
+        },
+        'takeLatest'
+    ),
 }
 
 test('should create reducers with sagas', () => {
 
     const todos = createModule(stub.todos);
     const users = createModule(stub.users);
+    const takes = createModule(stub.takes);
+    const ticks = createModule(stub.ticks);
 
-    stub.mods = [todos, users];
+    stub.mods = [todos, users, takes, ticks];
 
     stub.rootSaga = rootSaga(stub.mods);
     stub.rootReducer = rootReducer(stub.mods);
@@ -200,4 +254,94 @@ test('should accept a custom saga taker config', async () => {
 
     expect(stub.asyncSuccess.mock.calls.length).toBe(1);
     expect(shouldRunOnce).toBe(1);
+});
+
+test('should accept a taker options config', async () => {
+
+    const [todos] = stub.mods;
+
+    stub.store.dispatch(todos.actions.shouldThrottle());
+    await wait(10);
+    stub.store.dispatch(todos.actions.shouldThrottle());
+    await wait(10);
+    stub.store.dispatch(todos.actions.shouldThrottle());
+    await wait(100);
+
+
+    let throttled = stub.store.getState().todos.throttled;
+
+    expect(throttled).toBe(1);
+
+    await wait(100);
+    throttled = stub.store.getState().todos.throttled;
+    expect(throttled).toBe(2);
+});
+
+test('should accept a taker effect config', async () => {
+
+    const takes = stub.mods[2];
+    stub.fail = false;
+
+    // Test one function
+    stub.asyncSuccess = jest.fn();
+    stub.store.dispatch(takes.actions.fetch());
+    await wait(10);
+    stub.store.dispatch(takes.actions.fetch());
+    await wait(10);
+    stub.store.dispatch(takes.actions.fetch());
+
+    expect(stub.asyncSuccess.mock.calls.length).toBe(0);
+    await wait(50);
+    expect(stub.asyncSuccess.mock.calls.length).toBe(1);
+
+
+    // Test another function
+    stub.store.dispatch(takes.actions.shouldDebounce());
+    await wait(105);
+    stub.store.dispatch(takes.actions.shouldDebounce());
+    await wait(10);
+    stub.store.dispatch(takes.actions.shouldDebounce());
+    await wait(10);
+
+
+    let debounced = stub.store.getState().takes.debounced;
+
+    expect(debounced).toBe(1);
+
+    await wait(100);
+    debounced = stub.store.getState().takes.debounced;
+    expect(debounced).toBe(2);
+});
+
+
+test('should accept a taker function config', async () => {
+
+    const ticks = stub.mods[3];
+
+    // Test one function
+    stub.store.dispatch(ticks.actions.shouldThrottle());
+    stub.store.dispatch(ticks.actions.shouldThrottle());
+    stub.store.dispatch(ticks.actions.shouldThrottle());
+
+    let throttled = stub.store.getState().ticks.throttled;
+
+    expect(throttled).toBe(0);
+
+    await wait(100);
+    throttled = stub.store.getState().ticks.throttled;
+    expect(throttled).toBe(1);
+
+
+    // Test another function
+    stub.store.dispatch(ticks.actions.shouldDebounce());
+    stub.store.dispatch(ticks.actions.shouldDebounce());
+    stub.store.dispatch(ticks.actions.shouldDebounce());
+
+    let debounced = stub.store.getState().ticks.debounced;
+
+    expect(debounced).toBe(0);
+
+    await wait(100);
+    debounced = stub.store.getState().ticks.debounced;
+    expect(debounced).toBe(1);
 });

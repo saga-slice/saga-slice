@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+const fs = require('fs');
+const path = require('path');
+
+const pkg = require('../package.json');
+
+const find = `
+import effects from 'redux-saga/effects';
+import immer from 'immer';
+import redux from 'redux';
+`.trim();
+
+const replace = `
+import * as effects from 'redux-saga/effects';
+import immer from 'immer';
+import * as redux from 'redux';
+`.trim();
+
+
+const filepath = path.resolve(__dirname, '..', pkg.module);
+
+const contents = fs.readFileSync(filepath).toString();
+
+const newContents = contents.replace(find, replace);
+
+
+fs.writeFileSync(filepath, newContents);

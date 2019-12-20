@@ -1,7 +1,30 @@
-import { takeEvery } from 'redux-saga/effects';
+import * as effects from 'redux-saga/effects';
 import produce from "immer";
 
+const { takeLatest } = effects;
+
 const genName = (name:string, key:string) => `${name}/${key}`;
+
+const sagaTakers = [
+    'takeEvery',
+    'takeLatest',
+    'takeMaybe',
+    'takeLeading',
+    'debounce',
+    'throttle'
+];
+
+const hasSagaTakers = (keys: string[]): boolean =>{
+
+    return sagaTakers.reduce((a: boolean, val: string): boolean => {
+
+        if (a) {
+            return a;
+        }
+
+        return keys.includes(val);
+    }, false);
+}
 
 /**
  * Redux module creator makes types out of name + reducer keys.
@@ -55,10 +78,55 @@ export const createModule = (opts: ModuleOpts): SagaSlice => {
 
     const extractsInitial = {
         actions: {},
-        reducers: {}
+        reducers: {},
+        takers: {}
     };
 
     const reducerEntries = Object.entries(opts.reducers);
+
+    let defaultTaker = takeLatest;
+    let takerOpts = opts.takers || {};
+
+    // if takers config is a string that is an existing effect
+    // set it to that effect
+    if (typeof takerOpts === 'string' && sagaTakers.includes(takerOpts)) {
+
+        defaultTaker = effects[takerOpts];
+    }
+    else if (typeof takerOpts === 'function') {
+
+        defaultTaker = takerOpts;
+    }
+    else {
+
+        // if takers is configured to { [taker]: [...reduxTypes] }
+        // we're going to reverse that config and set it to { [reduxType]: effects[taker] }
+        if (hasSagaTakers(Object.keys(takerOpts))) {
+
+            takerOpts = Object.entries(takerOpts).reduce((takers: any, optEntry: [string, any]) => {
+
+                const [key, val] = optEntry;
+
+                // if key is a taker
+                // iterate through its value and set taker
+                if (sagaTakers.includes(key)) {
+
+                    val.forEach((t: string) => {
+
+                        takers[t] = effects[key];
+                    });
+                }
+                else {
+
+                    // leave other configs alone as well
+                    takers[key] = val;
+                }
+
+                return takers;
+            }, {});
+        }
+    }
+
 
     // Iterate over reducer properties, extract types and actions
     const extracted: OptsExtracts = reducerEntries.reduce((acc: OptsExtracts, entry: [string, any]) => {
@@ -75,10 +143,14 @@ export const createModule = (opts: ModuleOpts): SagaSlice => {
         // Bind reducer to type
         acc.reducers[type] = val;
 
+        // Set takers either from options or defaultTaker
+        acc.takers[type] = (takerOpts || {})[key] || defaultTaker;
+
+
         return acc;
     }, extractsInitial);
 
-    const { actions, reducers } = extracted;
+    const { actions, reducers, takers } = extracted;
 
 
     // Reducer for redux using Immer
@@ -110,16 +182,16 @@ export const createModule = (opts: ModuleOpts): SagaSlice => {
             // with `saga`, `taker`, `watcher`
 
             let saga: any = sagaObj.saga;
-            let taker: any = sagaObj.taker;
+            let taker: any = sagaObj.taker || takers[type];
+
+            if (!taker) {
+
+                taker = defaultTaker;
+            }
 
             if (typeof sagaObj === 'function') {
 
                 saga = sagaObj;
-                taker = takeEvery;
-            }
-            else {
-
-                taker = taker || takeEvery;
             }
 
             return function* () {
