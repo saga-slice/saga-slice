@@ -33,7 +33,7 @@ export default [
         plugins: [
             nodeResolve(),
             commonjs(),
-            babel()
+            // babel()
         ]
     }
 ];

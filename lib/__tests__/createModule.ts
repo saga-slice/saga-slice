@@ -1,4 +1,4 @@
-import { createModule } from '../createModule';
+import { createModule } from '..';
 
 const stub: { [key: string]: any } = {};
 

@@ -5,24 +5,40 @@ const path = require('path');
 
 const pkg = require('../package.json');
 
-const find = `
+const finds = [
+
+`
+import redux from 'redux';
 import effects from 'redux-saga/effects';
 import immer from 'immer';
-import redux from 'redux';
-`.trim();
+`.trim()
 
-const replace = `
+];
+
+const replaces = [
+
+`
+import * as redux from 'redux';
 import * as effects from 'redux-saga/effects';
 import immer from 'immer';
-import * as redux from 'redux';
-`.trim();
+`.trim()
+
+]
 
 
 const filepath = path.resolve(__dirname, '..', pkg.module);
 
 const contents = fs.readFileSync(filepath).toString();
 
-const newContents = contents.replace(find, replace);
+let newContents = contents;
+
+for (const i in finds) {
+
+    const find = finds[i];
+    const replace = replaces[i];
+
+    newContents = newContents.replace(find, replace);
+}
 
 
 fs.writeFileSync(filepath, newContents);

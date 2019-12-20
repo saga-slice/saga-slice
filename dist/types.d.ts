@@ -1,3 +1,39 @@
+export interface SagaObject {
+    (...args: any): void;
+    saga: void;
+    taker?: any;
+}
+interface RequiredModuleOpts {
+    name: string;
+    initialState: {
+        [key: string]: any;
+    };
+    reducers: {
+        [key: string]: () => any;
+    };
+}
+interface OptionalModuleOpts {
+    sagas?: (actions: object) => {
+        [type: string]: SagaObject;
+    };
+    takers?: {
+        [type: string]: void | string[];
+    };
+}
+export interface ModuleOpts extends Required<RequiredModuleOpts>, OptionalModuleOpts {
+}
+interface ReduxAction {
+    type: string;
+    payload: any;
+}
+export interface SagaSlice {
+    name: string;
+    actions: {
+        [key: string]: () => any;
+    };
+    reducer: (state: any, action: ReduxAction) => any;
+    sagas: Iterable<any>[];
+}
 /**
  * Redux module creator makes types out of name + reducer keys.
  * Abstracts away the need for types or the creation of actions.
@@ -42,53 +78,20 @@
  * });
  */
 export declare const createModule: (opts: ModuleOpts) => SagaSlice;
-interface SagaObject {
-    (...args: any): void;
-    saga: void;
-    taker?: any;
-}
-interface RequiredModuleOpts {
-    name: string;
-    initialState: {
-        [key: string]: any;
-    };
-    reducers: {
-        [key: string]: () => any;
-    };
-}
-interface OptionalModuleOpts {
-    sagas?: (actions: object) => {
-        [type: string]: SagaObject;
-    };
-    takers?: {
-        [type: string]: void;
-    };
-}
-interface ModuleOpts extends Required<RequiredModuleOpts>, OptionalModuleOpts {
-}
-interface OptsExtracts {
-    actions: {
-        [key: string]: any;
-    };
-    reducers: {
-        [key: string]: any;
-    };
-    takers: {
-        [key: string]: any;
-    };
-}
-interface ReduxAction {
-    type: string;
-    payload: any;
-}
-interface SagaSlice {
-    name: string;
-    actions: {
-        [key: string]: () => any;
-    };
-    reducer: (state: any, action: ReduxAction) => any;
-    sagas: Iterable<any>[];
-}
+/**
+ *
+ * Creates a root saga. Accepts an array of modules.
+ *
+ * @param {SagaSlice[]} modules Array of modules created using `createModule`
+ *
+ * @returns {Generator} Generator function for sagas
+ *
+ * @example
+ *
+ * const sagaMiddleware = createSagaMiddleware();
+ * sagaMiddleware.run(rootSaga(sagaSliceModules));
+ */
+export declare const rootSaga: (modules: SagaSlice[]) => () => Generator<import("@redux-saga/types").CombinatorEffect<"ALL", any>, void, unknown>;
 /**
  * Creates root reducer by combining reducers.
  * Accepts array of modules and and extra reducers object.
@@ -110,17 +113,4 @@ export declare const rootReducer: (modules: SagaSlice[], others?: {
 }) => import("redux").Reducer<{
     [x: string]: any;
 }, import("redux").AnyAction>;
-/**
- *
- * Creates a root saga. Accepts an array of modules.
- *
- * @param {SagaSlice[]} modules Array of modules created using `createModule`
- *
- * @returns {Generator} Generator function for sagas
- *
- * @example
- *
- * const sagaMiddleware = createSagaMiddleware();
- * sagaMiddleware.run(rootSaga(sagaSliceModules));
- */
-export declare const rootSaga: (modules: SagaSlice[]) => () => Generator<import("@redux-saga/types").CombinatorEffect<"ALL", any>, void, unknown>;
+export {};

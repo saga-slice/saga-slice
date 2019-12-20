@@ -1,5 +1,4 @@
-import { rootReducer } from '../rootReducer';
-import { createModule } from '../createModule';
+import { rootReducer, createModule } from '..';
 
 const stub = {
     modConf: {

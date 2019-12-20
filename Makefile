@@ -1,7 +1,6 @@
 
 build:
 	@ npm run ts
-	@ rm ./tmp/lib/index.d.ts
 	@ cat ./tmp/lib/*.d.ts > ./dist/types.d.ts
 	@ npm run rollup
 	@ ./scripts/replace
