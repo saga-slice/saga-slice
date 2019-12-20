@@ -1,4 +1,3 @@
-
 build:
 	@ npm run ts
 	@ cat ./tmp/lib/*.d.ts > ./dist/types.d.ts
@@ -6,13 +5,9 @@ build:
 	@ ./scripts/replace
 	@ rm -rf ./tmp
 
-test:
-	@ npm run lint
-	@ npm run test
-
 deploy:
 	@ make build
-	@ make test
+	@ npm run test
 	@ read -p 'Commit Message: ' commitMessage; \
 		git add .; \
 		git commit -am "$$commitMessage";
