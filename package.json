@@ -25,7 +25,7 @@
   "license": "MIT",
   "main": "dist/cjs.js",
   "module": "dist/es.js",
-  "typings": "dist/types.d.js",
+  "typings": "dist/types.d.ts",
   "files": [
     "dist",
     "lib",

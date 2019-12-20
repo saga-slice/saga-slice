@@ -1,6 +1,8 @@
 export interface SagaObject {
-    (...args: any): void;
-    saga: void;
+    (...args: any): Generator<any, void, any>;
+}
+export interface SagaObject {
+    saga?: Generator<any, void, any>;
     taker?: any;
 }
 interface RequiredModuleOpts {
