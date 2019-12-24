@@ -345,3 +345,19 @@ test('should accept a taker function config', async () => {
     debounced = stub.store.getState().ticks.debounced;
     expect(debounced).toBe(1);
 });
+
+test('should created named actions', () => {
+
+    const [todos, users] = stub.mods;
+
+    const todoActions = todos.namedActions();
+    const userActions = users.namedActions();
+
+    expect(Object.keys(todoActions)).toContain("todosFetch");
+    expect(Object.keys(todoActions)).toContain("todosFetchFail");
+    expect(Object.keys(todoActions)).toContain("todosFetchSuccess");
+
+    expect(Object.keys(userActions)).toContain("usersFetch");
+    expect(Object.keys(userActions)).toContain("usersFetchFail");
+    expect(Object.keys(userActions)).toContain("usersFetchSuccess");
+});

@@ -47,7 +47,7 @@ interface RequiredModuleOpts {
 }
 
 interface OptionalModuleOpts {
-    sagas?: (actions: object) => {
+    sagas?: (actions: any) => {
         [type: string]: SagaObject
     },
     takers?: {
@@ -77,6 +77,11 @@ interface ReduxAction {
 export interface SagaSlice {
 
     name: string,
+    namedActions: {
+        (): {
+            [key: string]: () => any
+        }
+    },
     actions: {
         [key: string]: () => any
     },
@@ -259,8 +264,22 @@ export const createModule = (opts: ModuleOpts): SagaSlice => {
         });
     }
 
+    // Returns actions in a camel case format based on name `[slice name][action]`
+    // EG: `todoFetchAll` `todoFetchSuccess` etc
+    const namedActions = () => Object.entries(actions).reduce((acc: any, entry) => {
+
+        const [key, action] = entry;
+
+        const namedKey = name + key[0].toUpperCase() + key.slice(1);
+
+        acc[namedKey] = action;
+
+        return acc;
+    }, {});
+
     return {
         name,
+        namedActions,
         actions,
         sagas,
         reducer: moduleReducer
