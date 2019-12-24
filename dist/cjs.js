@@ -305,10 +305,25 @@ var lib = createCommonjsModule(function (module, exports) {
           })
         );
       });
-    }
+    } // Returns actions in a camel case format based on name `[slice name][action]`
+    // EG: `todoFetchAll` `todoFetchSuccess` etc
+
+
+    var namedActions = function namedActions() {
+      return Object.entries(actions).reduce(function (acc, entry) {
+        var _entry3 = _slicedToArray(entry, 2),
+            key = _entry3[0],
+            action = _entry3[1];
+
+        var namedKey = name + key[0].toUpperCase() + key.slice(1);
+        acc[namedKey] = action;
+        return acc;
+      }, {});
+    };
 
     return {
       name: name,
+      namedActions: namedActions,
       actions: actions,
       sagas: sagas,
       reducer: moduleReducer

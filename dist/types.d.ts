@@ -15,7 +15,7 @@ interface RequiredModuleOpts {
     };
 }
 interface OptionalModuleOpts {
-    sagas?: (actions: object) => {
+    sagas?: (actions: any) => {
         [type: string]: SagaObject;
     };
     takers?: {
@@ -30,6 +30,11 @@ interface ReduxAction {
 }
 export interface SagaSlice {
     name: string;
+    namedActions: {
+        (): {
+            [key: string]: () => any;
+        };
+    };
     actions: {
         [key: string]: () => any;
     };
