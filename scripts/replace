@@ -11,7 +11,9 @@ const finds = [
 import redux from 'redux';
 import effects from 'redux-saga/effects';
 import immer from 'immer';
-`.trim()
+`.trim(),
+
+'immer.default'
 
 ];
 
@@ -21,7 +23,9 @@ const replaces = [
 import * as redux from 'redux';
 import * as effects from 'redux-saga/effects';
 import immer from 'immer';
-`.trim()
+`.trim(),
+
+'immer'
 
 ]
 

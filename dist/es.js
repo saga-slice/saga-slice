@@ -136,7 +136,7 @@ exports.createModule = (opts) => {
         const { type, payload } = action;
         const reducer = reducers[type];
         if (typeof reducer === 'function') {
-            return immer.default(state, draft => reducer(draft, payload));
+            return immer(state, draft => reducer(draft, payload));
         }
         return state;
     };

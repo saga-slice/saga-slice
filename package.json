@@ -61,7 +61,7 @@
   "peerDependencies": {
     "redux": "^4.x.x",
     "redux-saga": "^1.x.x",
-    "immer": "^3.x.x"
+    "immer": ">=3.x.x"
   },
   "eslintConfig": {
     "parser": "babel-eslint",
