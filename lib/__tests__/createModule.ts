@@ -113,3 +113,23 @@ test('should create dispatch object from action', () => {
     expect(action).toHaveProperty('type', stub.modConf.name + '/test');
     expect(action).toHaveProperty('payload', payload);
 });
+
+
+test('should have named actions that maps name to actions', () => {
+
+    const mod = createModule({
+        name: 'shouldBe',
+        initialState: {},
+        reducers: {
+            dancing: () => 'yeah',
+            prancing: () => 'yeah'
+        }
+    });
+
+    const { namedActions } = mod;
+
+    expect(namedActions).toHaveProperty('shouldBeDancing');
+    expect(namedActions).toHaveProperty('shouldBePrancing');
+    expect(namedActions).not.toHaveProperty('prancing');
+    expect(namedActions).not.toHaveProperty('dancing');
+});

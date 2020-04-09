@@ -266,7 +266,7 @@ export const createModule = (opts: ModuleOpts): SagaSlice => {
 
     // Returns actions in a camel case format based on name `[slice name][action]`
     // EG: `todoFetchAll` `todoFetchSuccess` etc
-    const namedActions = () => Object.entries(actions).reduce((acc: any, entry) => {
+    const namedActions = Object.entries(actions).reduce((acc: any, entry) => {
 
         const [key, action] = entry;
 

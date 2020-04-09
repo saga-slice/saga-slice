@@ -350,8 +350,8 @@ test('should created named actions', () => {
 
     const [todos, users] = stub.mods;
 
-    const todoActions = todos.namedActions();
-    const userActions = users.namedActions();
+    const todoActions = todos.namedActions;
+    const userActions = users.namedActions;
 
     expect(Object.keys(todoActions)).toContain("todosFetch");
     expect(Object.keys(todoActions)).toContain("todosFetchFail");

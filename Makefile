@@ -8,10 +8,7 @@ build:
 deploy:
 	@ make build
 	@ npm run test
-	@ read -p 'Commit Message: ' commitMessage; \
-		git add .; \
-		git commit -am "$$commitMessage";
-	@ read -p 'Version Bump (major, minor, patch): ' versionBump; \
-		npm version $$versionBump;
+	@ npm run commit
+	@ npm run release
 	@ npm publish;
 	@ git push origin master;
