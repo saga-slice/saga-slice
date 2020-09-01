@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.1](https://github.com/damusix/saga-slice/compare/v1.2.0...v1.2.1) (2020-09-01)
+
+
+### Bug Fixes
+
+* **build:** fix build process to support react native ([84b5289](https://github.com/damusix/saga-slice/commit/84b52894cd1b688be34c5a4950f0e4ffb93086be))
+
 ## 1.2.0 (2020-09-01)
 
 
