@@ -127,6 +127,7 @@ var lib = createCommonjsModule(function (module, exports) {
     value: true
   });
   exports.rootReducer = exports.rootSaga = exports.createModule = void 0;
+  var produce = typeof immer === 'function' ? immer : immer.produce;
   var takeLatest = effects.takeLatest;
 
   var genName = function genName(name, key) {
@@ -270,7 +271,7 @@ var lib = createCommonjsModule(function (module, exports) {
       var reducer = reducers[type];
 
       if (typeof reducer === 'function') {
-        return immer.produce(state, function (draft) {
+        return produce(state, function (draft) {
           return reducer(draft, payload);
         });
       }

@@ -1,6 +1,8 @@
 import { combineReducers } from 'redux';
 import * as effects from 'redux-saga/effects';
-import { produce } from "immer";
+import * as immer from "immer";
+
+const produce = (typeof immer === 'function' ? immer : immer.produce);
 
 const { takeLatest } = effects;
 
