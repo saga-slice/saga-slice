@@ -1,6 +1,6 @@
 import * as redux from 'redux';
 import * as effects from 'redux-saga/effects';
-import immer from 'immer';
+import * as immer from 'immer';
 
 function unwrapExports (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -12,6 +12,7 @@ function createCommonjsModule(fn, module) {
 
 var lib = createCommonjsModule(function (module, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.rootReducer = exports.rootSaga = exports.createModule = void 0;
 
 
 
@@ -136,7 +137,7 @@ exports.createModule = (opts) => {
         const { type, payload } = action;
         const reducer = reducers[type];
         if (typeof reducer === 'function') {
-            return immer(state, draft => reducer(draft, payload));
+            return immer.produce(state, draft => reducer(draft, payload));
         }
         return state;
     };
@@ -163,17 +164,20 @@ exports.createModule = (opts) => {
     }
     // Returns actions in a camel case format based on name `[slice name][action]`
     // EG: `todoFetchAll` `todoFetchSuccess` etc
-    const namedActions = () => Object.entries(actions).reduce((acc, entry) => {
+    const namedActions = Object.entries(actions).reduce((acc, entry) => {
         const [key, action] = entry;
         const namedKey = name + key[0].toUpperCase() + key.slice(1);
         acc[namedKey] = action;
         return acc;
     }, {});
+    // State selector
+    const getState = (state) => state[name];
     return {
         name,
         namedActions,
         actions,
         sagas,
+        getState,
         reducer: moduleReducer
     };
 };
@@ -200,7 +204,7 @@ exports.rootSaga = function (modules) {
 };
 /**
  * Creates root reducer by combining reducers.
- * Accepts array of modules and and extra reducers object.
+ * Accepts array of modules and extra reducers object.
  *
  * @arg {Array.<SagaSlice>} modules Array of modules created using `createModule`
  * @arg {Object.<String, Function>} others Object of extra reducers not created by `saga-slice`
@@ -228,9 +232,9 @@ exports.rootReducer = function (modules, others = {}) {
 });
 
 var index = unwrapExports(lib);
-var lib_1 = lib.createModule;
+var lib_1 = lib.rootReducer;
 var lib_2 = lib.rootSaga;
-var lib_3 = lib.rootReducer;
+var lib_3 = lib.createModule;
 
 export default index;
-export { lib_1 as createModule, lib_3 as rootReducer, lib_2 as rootSaga };
+export { lib_3 as createModule, lib_1 as rootReducer, lib_2 as rootSaga };

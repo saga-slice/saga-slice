@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 import * as effects from 'redux-saga/effects';
-import produce from "immer";
+import { produce } from "immer";
 
 const { takeLatest } = effects;
 
@@ -85,6 +85,7 @@ export interface SagaSlice {
     actions: {
         [key: string]: () => any
     },
+    getState: (state: any) => any,
     reducer: (state: any, action: ReduxAction) => any,
     sagas: Iterable<any>[]
 }
@@ -277,11 +278,15 @@ export const createModule = (opts: ModuleOpts): SagaSlice => {
         return acc;
     }, {});
 
+    // State selector
+    const getState = (state: any) => state[name];
+
     return {
         name,
         namedActions,
         actions,
         sagas,
+        getState,
         reducer: moduleReducer
     };
 };
@@ -317,7 +322,7 @@ export const rootSaga = function (modules: SagaSlice[]) {
 
 /**
  * Creates root reducer by combining reducers.
- * Accepts array of modules and and extra reducers object.
+ * Accepts array of modules and extra reducers object.
  *
  * @arg {Array.<SagaSlice>} modules Array of modules created using `createModule`
  * @arg {Object.<String, Function>} others Object of extra reducers not created by `saga-slice`

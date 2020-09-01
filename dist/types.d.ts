@@ -1,3 +1,4 @@
+import * as effects from 'redux-saga/effects';
 export interface SagaObject {
     (...args: any): Generator<any, void, any>;
 }
@@ -38,6 +39,7 @@ export interface SagaSlice {
     actions: {
         [key: string]: () => any;
     };
+    getState: (state: any) => any;
     reducer: (state: any, action: ReduxAction) => any;
     sagas: Iterable<any>[];
 }
@@ -98,10 +100,10 @@ export declare const createModule: (opts: ModuleOpts) => SagaSlice;
  * const sagaMiddleware = createSagaMiddleware();
  * sagaMiddleware.run(rootSaga(sagaSliceModules));
  */
-export declare const rootSaga: (modules: SagaSlice[]) => () => Generator<import("@redux-saga/types").CombinatorEffect<"ALL", any>, void, unknown>;
+export declare const rootSaga: (modules: SagaSlice[]) => () => Generator<effects.AllEffect<any>, void, unknown>;
 /**
  * Creates root reducer by combining reducers.
- * Accepts array of modules and and extra reducers object.
+ * Accepts array of modules and extra reducers object.
  *
  * @arg {Array.<SagaSlice>} modules Array of modules created using `createModule`
  * @arg {Object.<String, Function>} others Object of extra reducers not created by `saga-slice`
@@ -117,7 +119,7 @@ export declare const rootSaga: (modules: SagaSlice[]) => () => Generator<import(
  */
 export declare const rootReducer: (modules: SagaSlice[], others?: {
     [key: string]: any;
-}) => import("redux").Reducer<{
-    [x: string]: any;
-}, import("redux").AnyAction>;
+}) => import("redux").Reducer<import("redux").CombinedState<{
+    [x: string]: unknown;
+}>, import("redux").Action<any>>;
 export {};

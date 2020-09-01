@@ -58,7 +58,7 @@ function _objectSpread2(target) {
 }
 
 function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest();
+  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
 
 function _arrayWithHoles(arr) {
@@ -66,10 +66,7 @@ function _arrayWithHoles(arr) {
 }
 
 function _iterableToArrayLimit(arr, i) {
-  if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
-    return;
-  }
-
+  if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
   var _arr = [];
   var _n = true;
   var _d = false;
@@ -95,8 +92,25 @@ function _iterableToArrayLimit(arr, i) {
   return _arr;
 }
 
+function _unsupportedIterableToArray(o, minLen) {
+  if (!o) return;
+  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+  var n = Object.prototype.toString.call(o).slice(8, -1);
+  if (n === "Object" && o.constructor) n = o.constructor.name;
+  if (n === "Map" || n === "Set") return Array.from(o);
+  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+}
+
+function _arrayLikeToArray(arr, len) {
+  if (len == null || len > arr.length) len = arr.length;
+
+  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+  return arr2;
+}
+
 function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
 function unwrapExports (x) {
@@ -112,6 +126,7 @@ var lib = createCommonjsModule(function (module, exports) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
+  exports.rootReducer = exports.rootSaga = exports.createModule = void 0;
   var takeLatest = effects.takeLatest;
 
   var genName = function genName(name, key) {
@@ -255,7 +270,7 @@ var lib = createCommonjsModule(function (module, exports) {
       var reducer = reducers[type];
 
       if (typeof reducer === 'function') {
-        return immer["default"](state, function (draft) {
+        return immer.produce(state, function (draft) {
           return reducer(draft, payload);
         });
       }
@@ -286,39 +301,38 @@ var lib = createCommonjsModule(function (module, exports) {
           saga = sagaObj;
         }
 
-        return (
-          /*#__PURE__*/
-          regeneratorRuntime.mark(function _callee() {
-            return regeneratorRuntime.wrap(function _callee$(_context) {
-              while (1) {
-                switch (_context.prev = _context.next) {
-                  case 0:
-                    _context.next = 2;
-                    return taker(type, saga);
+        return /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+          return regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) {
+              switch (_context.prev = _context.next) {
+                case 0:
+                  _context.next = 2;
+                  return taker(type, saga);
 
-                  case 2:
-                  case "end":
-                    return _context.stop();
-                }
+                case 2:
+                case "end":
+                  return _context.stop();
               }
-            }, _callee);
-          })
-        );
+            }
+          }, _callee);
+        });
       });
     } // Returns actions in a camel case format based on name `[slice name][action]`
     // EG: `todoFetchAll` `todoFetchSuccess` etc
 
 
-    var namedActions = function namedActions() {
-      return Object.entries(actions).reduce(function (acc, entry) {
-        var _entry3 = _slicedToArray(entry, 2),
-            key = _entry3[0],
-            action = _entry3[1];
+    var namedActions = Object.entries(actions).reduce(function (acc, entry) {
+      var _entry3 = _slicedToArray(entry, 2),
+          key = _entry3[0],
+          action = _entry3[1];
 
-        var namedKey = name + key[0].toUpperCase() + key.slice(1);
-        acc[namedKey] = action;
-        return acc;
-      }, {});
+      var namedKey = name + key[0].toUpperCase() + key.slice(1);
+      acc[namedKey] = action;
+      return acc;
+    }, {}); // State selector
+
+    var getState = function getState(state) {
+      return state[name];
     };
 
     return {
@@ -326,6 +340,7 @@ var lib = createCommonjsModule(function (module, exports) {
       namedActions: namedActions,
       actions: actions,
       sagas: sagas,
+      getState: getState,
       reducer: moduleReducer
     };
   };
@@ -345,34 +360,31 @@ var lib = createCommonjsModule(function (module, exports) {
 
 
   exports.rootSaga = function (modules) {
-    return (
-      /*#__PURE__*/
-      regeneratorRuntime.mark(function _callee2() {
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.next = 2;
-                return effects.all(modules.map(function (slice) {
-                  return slice.sagas;
-                }).reduce(function (a, c) {
-                  return a.concat(c);
-                }, []).map(function (saga) {
-                  return saga();
-                }));
+    return /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              _context2.next = 2;
+              return effects.all(modules.map(function (slice) {
+                return slice.sagas;
+              }).reduce(function (a, c) {
+                return a.concat(c);
+              }, []).map(function (saga) {
+                return saga();
+              }));
 
-              case 2:
-              case "end":
-                return _context2.stop();
-            }
+            case 2:
+            case "end":
+              return _context2.stop();
           }
-        }, _callee2);
-      })
-    );
+        }
+      }, _callee2);
+    });
   };
   /**
    * Creates root reducer by combining reducers.
-   * Accepts array of modules and and extra reducers object.
+   * Accepts array of modules and extra reducers object.
    *
    * @arg {Array.<SagaSlice>} modules Array of modules created using `createModule`
    * @arg {Object.<String, Function>} others Object of extra reducers not created by `saga-slice`
@@ -396,15 +408,15 @@ var lib = createCommonjsModule(function (module, exports) {
       a[name] = reducer;
       return a;
     }, {});
-    return redux.combineReducers(_objectSpread2({}, reducers, {}, others));
+    return redux.combineReducers(_objectSpread2(_objectSpread2({}, reducers), others));
   };
 });
 var index = unwrapExports(lib);
-var lib_1 = lib.createModule;
+var lib_1 = lib.rootReducer;
 var lib_2 = lib.rootSaga;
-var lib_3 = lib.rootReducer;
+var lib_3 = lib.createModule;
 
-exports.createModule = lib_1;
+exports.createModule = lib_3;
 exports.default = index;
-exports.rootReducer = lib_3;
+exports.rootReducer = lib_1;
 exports.rootSaga = lib_2;

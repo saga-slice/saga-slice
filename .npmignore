@@ -4,5 +4,6 @@ rollup.config.js
 tsconfig.json
 .vscode
 .eslintignore
+.nvmrc
 lib
 scripts

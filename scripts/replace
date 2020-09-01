@@ -5,7 +5,18 @@ const path = require('path');
 
 const pkg = require('../package.json');
 
-const finds = [
+const findAndReplace = (path, entries) => {
+
+    fs.writeFileSync(
+        path,
+        entries.reduce(
+            (content, [find, replace]) => content.replace(find, replace),
+            fs.readFileSync(path).toString()
+        )
+    );
+}
+
+const esImports = [
 
 `
 import redux from 'redux';
@@ -13,36 +24,25 @@ import effects from 'redux-saga/effects';
 import immer from 'immer';
 `.trim(),
 
-'immer.default'
-
-];
-
-const replaces = [
-
 `
 import * as redux from 'redux';
 import * as effects from 'redux-saga/effects';
-import immer from 'immer';
-`.trim(),
+import * as immer from 'immer';
+`.trim()
 
-'immer'
+];
 
-]
+findAndReplace(
+    path.resolve(__dirname, '..', pkg.module),
+    [esImports]
+);
 
+// const cjsImmer = [
+//     'immer["default"]',
+//     'immer'
+// ];
 
-const filepath = path.resolve(__dirname, '..', pkg.module);
-
-const contents = fs.readFileSync(filepath).toString();
-
-let newContents = contents;
-
-for (const i in finds) {
-
-    const find = finds[i];
-    const replace = replaces[i];
-
-    newContents = newContents.replace(find, replace);
-}
-
-
-fs.writeFileSync(filepath, newContents);
+// findAndReplace(
+//     path.resolve(__dirname, '..', pkg.main),
+//     [cjsImmer]
+// );

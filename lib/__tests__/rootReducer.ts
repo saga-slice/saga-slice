@@ -1,3 +1,4 @@
+import { createStore } from "redux";
 import { rootReducer, createModule } from '..';
 
 const stub = {
@@ -32,7 +33,10 @@ test('should create a root reducer', () => {
 
     expect(typeof reducer).toBe('function');
 
-    const states = reducer({}, { type: 'la', payload: 'lo' });
+    const store = createStore(reducer);
+
+    store.dispatch({ type: 'la', payload: 'lo' });
+    const states = store.getState();
 
     [
         'mod1',
