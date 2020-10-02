@@ -275,7 +275,8 @@ var lib = createCommonjsModule(function (module, exports) {
           try {
             return reducer(draft, payload);
           } catch (error) {
-            return error
+            console.log(error)
+            return draft
           }
         });
       }
