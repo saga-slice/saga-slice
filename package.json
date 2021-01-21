@@ -52,7 +52,7 @@
     "eslint-plugin-jest": "^22.15.1",
     "eslint-plugin-react": "^7.14.3",
     "husky": "^4.2.3",
-    "immer": "^7.x.x",
+    "immer": "^8.x.x",
     "jest": "^24.9.0",
     "redux": "^4.0.4",
     "redux-saga": "^1.1.3",
