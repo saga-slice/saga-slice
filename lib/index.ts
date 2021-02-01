@@ -136,7 +136,7 @@ export interface SagaSlice {
  *     })
  * });
  */
-export const createModule = (opts: ModuleOpts): SagaSlice => {
+export const createModule = <StoreState>(opts: ModuleOpts<StoreState>): SagaSlice => {
 
     const {
         name,
