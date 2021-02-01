@@ -38,13 +38,13 @@ export interface SagaObject {
     taker?: any
 }
 
-interface RequiredModuleOpts {
+interface RequiredModuleOpts<StoreState> {
     name: string,
     initialState: {
         [key: string]: any
     },
     reducers: {
-        [key: string]: () => any
+        [key: string]: (state: StoreState, payload) => void
     }
 }
 
@@ -57,7 +57,8 @@ interface OptionalModuleOpts {
     }
 };
 
-export interface ModuleOpts extends Required<RequiredModuleOpts>, OptionalModuleOpts {}
+export interface ModuleOpts<StoreState>
+  extends Required<RequiredModuleOpts<StoreState>>, OptionalModuleOpts {}
 
 interface OptsExtracts {
     actions: {
