@@ -6,13 +6,13 @@ export interface SagaObject {
     saga?: Generator<any, void, any>;
     taker?: any;
 }
-interface RequiredModuleOpts {
+interface RequiredModuleOpts<StoreState> {
     name: string;
     initialState: {
         [key: string]: any;
     };
     reducers: {
-        [key: string]: () => any;
+        [key: string]: (state: StoreState, payload: any) => void;
     };
 }
 interface OptionalModuleOpts {
@@ -23,7 +23,7 @@ interface OptionalModuleOpts {
         [type: string]: void | string[];
     };
 }
-export interface ModuleOpts extends Required<RequiredModuleOpts>, OptionalModuleOpts {
+export interface ModuleOpts<StoreState> extends Required<RequiredModuleOpts<StoreState>>, OptionalModuleOpts {
 }
 interface ReduxAction {
     type: string;
@@ -86,7 +86,7 @@ export interface SagaSlice {
  *     })
  * });
  */
-export declare const createModule: (opts: ModuleOpts) => SagaSlice;
+export declare const createModule: <StoreState>(opts: ModuleOpts<StoreState>) => SagaSlice;
 /**
  *
  * Creates a root saga. Accepts an array of modules.

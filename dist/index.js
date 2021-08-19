@@ -272,11 +272,7 @@ var lib = createCommonjsModule(function (module, exports) {
 
       if (typeof reducer === 'function') {
         return produce(state, function (draft) {
-          try {
-            return reducer(draft, payload);
-          } catch (error) {
-            return error
-          }
+          return reducer(draft, payload);
         });
       }
 
