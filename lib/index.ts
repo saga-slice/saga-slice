@@ -40,9 +40,7 @@ export interface SagaObject {
 
 interface RequiredModuleOpts<StoreState> {
     name: string,
-    initialState: {
-        [key: string]: any
-    },
+    initialState: StoreState,
     reducers: {
         [key: string]: (state: StoreState, payload) => void
     }
