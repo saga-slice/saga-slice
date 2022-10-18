@@ -1,6 +1,12 @@
 import { combineReducers } from 'redux';
 import * as effects from 'redux-saga/effects';
 import * as immer from "immer";
+import {
+    Slice as ReduxSlice,
+    createSlice as createReduxSlice,
+    CreateSliceOptions as CreateReduxSliceOptions,
+    SliceCaseReducers,
+} from '@reduxjs/toolkit';
 
 const produce = (typeof immer === 'function' ? immer : immer.produce);
 
@@ -33,22 +39,23 @@ export interface SagaObject {
     (...args: any): Generator<any, void, any>
 }
 
-export interface SagaObject {
+export interface SagaObjectWithTaker {
     saga?: Generator<any, void, any>,
     taker?: any
 }
 
+type ReducersType<StoreState> = {
+    [key: string]: (state: StoreState, payload) => void
+}
 interface RequiredModuleOpts<StoreState> {
     name: string,
     initialState: StoreState,
-    reducers: {
-        [key: string]: (state: StoreState, payload) => void
-    }
+    reducers: ReducersType<StoreState>
 }
 
 interface OptionalModuleOpts {
     sagas?: (actions: any) => {
-        [type: string]: SagaObject
+        [type: string]: SagaObject | SagaObjectWithTaker
     },
     takers?: {
         [type: string]: void | string[],
@@ -235,7 +242,6 @@ export const createModule = <StoreState>(opts: ModuleOpts<StoreState>): SagaSlic
     // Iterate over sagas and prepare them
     let sagas: any[] = [];
 
-
     if (opts.sagas) {
 
         const sagasEntries = Object.entries(opts.sagas(actions));
@@ -292,7 +298,50 @@ export const createModule = <StoreState>(opts: ModuleOpts<StoreState>): SagaSlic
     };
 };
 
+export function createSlice<
+  State,
+  CaseReducers extends SliceCaseReducers<State>,
+  Name extends string = string
+>(
+  options: CreateSliceOptions<State, CaseReducers, Name>
+): Slice<State, CaseReducers, Name> {
+    const reduxSlice = createReduxSlice(options)
+    const {
+        name,
+        reducers,
+        sagas,
+        takers,
+    } = options
+    const sagaSliceOptions: ModuleOpts<State> = {
+        name,
+        initialState: reduxSlice.getInitialState(),
+        reducers: reducers as ReducersType<State>,
+        sagas,
+        takers,
+    }
+    const module = createModule(sagaSliceOptions)
+    return {
+        ...reduxSlice,
+        sagas: module.sagas as unknown as GeneratorFunction[],
+    }
+}
 
+/** Create a redux-compatible Slice that adds sagas. */
+export interface CreateSliceOptions<
+  State = any,
+  CR extends SliceCaseReducers<State> = SliceCaseReducers<State>,
+  Name extends string = string
+> extends CreateReduxSliceOptions<State, CR, Name>, OptionalModuleOpts {}
+
+
+/** A redux-compatible Slice that also supports sagas. */
+export interface Slice<
+  State = any,
+  CaseReducers extends SliceCaseReducers<State> = SliceCaseReducers<State>,
+  Name extends string = string
+> extends ReduxSlice<State, CaseReducers, Name> {
+    sagas: GeneratorFunction[]
+}
 
 /**
  *

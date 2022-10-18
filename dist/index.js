@@ -7,6 +7,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var redux = _interopDefault(require('redux'));
 var effects = _interopDefault(require('redux-saga/effects'));
 var immer = _interopDefault(require('immer'));
+var toolkit = _interopDefault(require('@reduxjs/toolkit'));
 
 function _defineProperty(obj, key, value) {
   if (key in obj) {
@@ -126,7 +127,7 @@ var lib = createCommonjsModule(function (module, exports) {
   Object.defineProperty(exports, "__esModule", {
     value: true
   });
-  exports.rootReducer = exports.rootSaga = exports.createModule = void 0;
+  exports.rootReducer = exports.rootSaga = exports.createSlice = exports.createModule = void 0;
   var produce = typeof immer === 'function' ? immer : immer.produce;
   var takeLatest = effects.takeLatest;
 
@@ -345,6 +346,27 @@ var lib = createCommonjsModule(function (module, exports) {
       reducer: moduleReducer
     };
   };
+
+  function createSlice(options) {
+    var reduxSlice = toolkit.createSlice(options);
+    var name = options.name,
+        reducers = options.reducers,
+        sagas = options.sagas,
+        takers = options.takers;
+    var sagaSliceOptions = {
+      name: name,
+      initialState: reduxSlice.getInitialState(),
+      reducers: reducers,
+      sagas: sagas,
+      takers: takers
+    };
+    var module = exports.createModule(sagaSliceOptions);
+    return _objectSpread2(_objectSpread2({}, reduxSlice), {}, {
+      sagas: module.sagas
+    });
+  }
+
+  exports.createSlice = createSlice;
   /**
    *
    * Creates a root saga. Accepts an array of modules.
@@ -358,7 +380,6 @@ var lib = createCommonjsModule(function (module, exports) {
    * const sagaMiddleware = createSagaMiddleware();
    * sagaMiddleware.run(rootSaga(sagaSliceModules));
    */
-
 
   exports.rootSaga = function (modules) {
     return /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
@@ -415,9 +436,11 @@ var lib = createCommonjsModule(function (module, exports) {
 var index = unwrapExports(lib);
 var lib_1 = lib.rootReducer;
 var lib_2 = lib.rootSaga;
-var lib_3 = lib.createModule;
+var lib_3 = lib.createSlice;
+var lib_4 = lib.createModule;
 
-exports.createModule = lib_3;
+exports.createModule = lib_4;
+exports.createSlice = lib_3;
 exports.default = index;
 exports.rootReducer = lib_1;
 exports.rootSaga = lib_2;
